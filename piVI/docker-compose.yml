@@ -1,0 +1,37 @@
+services:
+
+  postgres:
+    image: postgres:17
+    container_name: spotify-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: spotify
+      POSTGRES_USER: spotify
+      POSTGRES_PASSWORD: spotify
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  ml:
+    build: ./ml
+    container_name: spotify-ml
+    volumes:
+      - ./data:/app/data
+      - ./ml:/app
+    working_dir: /app
+    command: tail -f /dev/null
+
+  backend:
+    build: ./backend
+    container_name: spotify-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
