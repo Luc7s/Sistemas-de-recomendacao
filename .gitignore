@@ -1,1 +1,8 @@
 .env
+node_modules/
+dist/
+
+# Artefatos gerados: regenerar com vectorize.py / resolve_youtube.py.
+piVI/data/preprocess/tracks.json
+piVI/data/preprocess/features.json
+piVI/data/preprocess/youtube_map.json
