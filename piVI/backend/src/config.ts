@@ -16,4 +16,12 @@ export const config = {
   maxPerArtist: 2,
   /** Peso da popularidade no score final (0 = so similaridade). */
   popularityWeight: 0.15,
+
+  youtubeMapPath: path.join(PREPROCESS_DIR, "youtube_map.json"),
+  youtubeApiKey: process.env.YOUTUBE_API_KEY || undefined,
+  /** Busca ao vivo custa 100 de quota por faixa: desligada por padrao. */
+  youtubeLiveFallback: process.env.YOUTUBE_LIVE_FALLBACK === "true",
+  youtubeDailyQuota: Number(process.env.YOUTUBE_DAILY_QUOTA ?? 10_000),
+  youtubeTimeoutMs: 5_000,
+  youtubeFlushMs: 10_000,
 } as const;

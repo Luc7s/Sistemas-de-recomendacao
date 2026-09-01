@@ -1,22 +1,11 @@
 import { readFile } from "node:fs/promises";
 
 import { config } from "./config.js";
-import type { FeaturesFile, ScoredTrack, Track } from "./types.js";
+import type { FeaturesFile, ScoredTrack, Track } from "./types/track.js";
 
-/**
- * Recomendador content-based.
- *
- * O dataset nao tem usuarios nem historico de escuta, entao filtragem
- * colaborativa esta fora de questao. A recomendacao vem da similaridade entre
- * as proprias faixas: features de audio + tonalidade + genero.
- *
- * Os vetores ja chegam L2-normalizados do preprocess, entao a similaridade de
- * cosseno e um produto escalar puro.
- */
 export class Recommender {
   private constructor(
     private readonly tracks: Track[],
-    /** Matriz achatada em row-major: linha r ocupa [r*cols, r*cols + cols). */
     private readonly matrix: Float32Array,
     private readonly rows: number,
     private readonly cols: number,

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 
+import { YoutubeProvider } from "./providers/youtube.js";
 import { Recommender, UnknownTrackError } from "./recommender.js";
 
 const searchQuery = z.object({
@@ -22,7 +23,10 @@ const profileBody = z.object({
   diversify: z.boolean().default(true),
 });
 
-export function createRoutes(recommender: Recommender): Router {
+export function createRoutes(
+  recommender: Recommender,
+  youtube: YoutubeProvider,
+): Router {
   const router = Router();
 
   router.get("/health", (_req, res) => {
@@ -30,6 +34,8 @@ export function createRoutes(recommender: Recommender): Router {
       status: "ok",
       tracks: recommender.size,
       dimensions: recommender.dimensions,
+      playable: youtube.size,
+      youtube_live_fallback: youtube.liveEnabled,
     });
   });
 
@@ -87,6 +93,25 @@ export function createRoutes(recommender: Recommender): Router {
         return res.status(404).json({ error: err.message });
       }
       throw err;
+    }
+  });
+
+  router.get("/play/:trackId", async (req, res, next) => {
+    const track = recommender.getTrack(req.params.trackId);
+    if (!track) return res.status(404).json({ error: "faixa nao encontrada" });
+
+    try {
+      const source = await youtube.resolve(track);
+      if (!source) {
+        // 404 diria que a faixa nao existe; ela existe, so nao tem video.
+        return res.status(409).json({
+          error: "faixa sem video correspondente",
+          track_id: track.track_id,
+        });
+      }
+      res.json({ track, source });
+    } catch (err) {
+      next(err);
     }
   });
 
