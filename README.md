@@ -16,7 +16,8 @@ próprias faixas: atributos de áudio, tonalidade e gênero.
 | [**data/**](piVI/data/README.md) | pipeline de dados: limpeza, vetorização, mapa do YouTube |
 | [**backend/**](piVI/backend/README.md) | serviço Node: como roda, como o recomendador funciona |
 | [**api/**](piVI/api/README.md) | referência HTTP: rotas, parâmetros, códigos de erro |
-| [**frontend/**](piVI/frontend/README.md) | interface e player *(ainda não implementado)* |
+| [**nest-api/**](piVI/nest-api/README.md) | API de playlists (NestJS): CRUD e capas no bucket S3 |
+| [**frontend/**](piVI/frontend/README.md) | interface: playlists e capas prontas, player pendente |
 
 ---
 
@@ -50,6 +51,22 @@ data/preprocess/youtube_map.json ─┤   (resolve_youtube.py, offline)
                                   ▼
                          frontend + IFrame Player
 ```
+
+Ao lado disso, sem tocar no motor de recomendação, roda a API de playlists:
+
+```
+frontend (React + Vite)
+      │
+      │  /nest/playlists            multipart no upload de capa
+      ▼
+nest-api (NestJS, porta 8001)
+      │
+      └── S3 ──► devolve imageUrl (ou null, quando não há capa)
+```
+
+**Nada disso passa pelo Spotify.** As faixas vêm do dataset do Kaggle e o
+áudio, quando o player entrar, vem do YouTube — por isso não há login nem
+assinatura envolvidos.
 
 Três estágios, com fronteiras nítidas:
 
@@ -190,9 +207,10 @@ Rotas completas em [api/](piVI/api/README.md).
 ```
 piVI/
 ├── data/          pipeline de dados (Python)
-├── backend/       serviço HTTP (Node + TypeScript)
+├── backend/       serviço HTTP de recomendação (Express + TypeScript)
+├── nest-api/      API de playlists (NestJS + S3)
 ├── api/           referência das rotas
-├── frontend/      interface e player (pendente)
+├── frontend/      interface (React + Vite)
 └── docker-compose.yml
 ```
 
@@ -207,12 +225,18 @@ piVI/
 | `YOUTUBE_API_KEY` | — | chave da YouTube Data API v3 |
 | `YOUTUBE_LIVE_FALLBACK` | `false` | busca ao vivo para faixas fora do mapa |
 | `YOUTUBE_DAILY_QUOTA` | `10000` | teto diário de quota |
+| `S3_BUCKET` | — | bucket das capas de playlist (`nest-api`) |
+| `AWS_REGION` | `us-east-1` | região do bucket |
+| `S3_PUBLIC_BASE_URL` | — | CDN na frente do bucket; vazio usa a URL da AWS |
+
+As demais variáveis do S3 estão em [nest-api/](piVI/nest-api/README.md).
 
 ---
 
 ## Próximos passos
 
-- [ ] Frontend com IFrame Player API, encadeando recomendações num rádio
+- [ ] Gerar playlist a partir de uma música escolhida
+- [ ] Player com IFrame Player API, encadeando recomendações num rádio
       contínuo.
 - [ ] Popular `youtube_map.json` além das 100 faixas iniciais.
 - [ ] Definir o papel do Postgres, hoje declarado no compose mas não usado.

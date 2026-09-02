@@ -36,5 +36,25 @@ services:
     depends_on:
       - postgres
 
+  nest-api:
+    build: ./nest-api
+    container_name: spotify-nest-api
+    ports:
+      - "8001:8001"
+    environment:
+      S3_BUCKET: ${S3_BUCKET:-}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      S3_KEY_PREFIX: ${S3_KEY_PREFIX:-playlists}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+      S3_PUBLIC_BASE_URL: ${S3_PUBLIC_BASE_URL:-}
+    volumes:
+      - ./nest-api:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
