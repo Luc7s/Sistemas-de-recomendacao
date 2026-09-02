@@ -1,11 +1,20 @@
-# Sistema de Recomendação Musical
+# Gerador de Playlist
 
-Recomendador de músicas *content-based* sobre um catálogo de 82.924 faixas do
-Spotify, com reprodução via YouTube.
+Você escolhe **uma música** e o sistema monta uma playlist de 10 faixas
+parecidas, com capa própria. Catálogo de 82.924 faixas do Spotify, reprodução
+via YouTube.
 
 O dataset não tem usuários nem histórico de escuta, então filtragem
-colaborativa está fora de questão. A recomendação vem da similaridade entre as
-próprias faixas: atributos de áudio, tonalidade e gênero.
+colaborativa está fora de questão. A semelhança vem das próprias faixas:
+atributos de áudio, tonalidade e gênero. É isso que torna o gerador possível
+com uma música só — não é preciso conhecer o gosto de ninguém, basta uma
+semente.
+
+> **Mudança de escopo.** A ideia original era um *rádio contínuo*: tocar uma
+> faixa e, ao terminar, emendar a próxima recomendação. O rádio virou um
+> caminho possível (ver [pendências](#próximos-passos)), mas o produto agora é
+> o **gerador de playlist**: um clique produz uma lista concreta, que a pessoa
+> nomeia, ilustra e guarda.
 
 ---
 
@@ -17,7 +26,7 @@ próprias faixas: atributos de áudio, tonalidade e gênero.
 | [**backend/**](piVI/backend/README.md) | serviço Node: como roda, como o recomendador funciona |
 | [**api/**](piVI/api/README.md) | referência HTTP: rotas, parâmetros, códigos de erro |
 | [**nest-api/**](piVI/nest-api/README.md) | API de playlists (NestJS): CRUD e capas no bucket S3 |
-| [**frontend/**](piVI/frontend/README.md) | interface: playlists e capas prontas, player pendente |
+| [**frontend/**](piVI/frontend/README.md) | interface: geração de playlist pronta, player pendente |
 
 ---
 
@@ -57,7 +66,12 @@ Ao lado disso, sem tocar no motor de recomendação, roda a API de playlists:
 ```
 frontend (React + Vite)
       │
-      │  /nest/playlists            multipart no upload de capa
+      ├── /api/search ──────────┐
+      ├── /api/recommend/:id ───┤   backend, porta 8000
+      │                         ▼
+      │              semente + 10 faixas parecidas
+      │                         │
+      │  /nest/playlists ◄──────┘   cria com os track_ids
       ▼
 nest-api (NestJS, porta 8001)
       │
@@ -68,13 +82,14 @@ nest-api (NestJS, porta 8001)
 áudio, quando o player entrar, vem do YouTube — por isso não há login nem
 assinatura envolvidos.
 
-Três estágios, com fronteiras nítidas:
+Quatro estágios, com fronteiras nítidas:
 
 | Estágio | Onde roda | Produz |
 |---|---|---|
 | **Preparação** | Python, offline | `tracks.json`, `features.json`, `youtube_map.json` |
 | **Serviço** | Node, em memória | API HTTP de busca, recomendação e playback |
-| **Reprodução** | Navegador | player do YouTube encadeando recomendações |
+| **Reprodução** | Navegador | player do YouTube (pendente) |
+| **Playlists** | Node + S3 | playlists geradas, com capa no bucket |
 
 A decisão central é que **tudo que é caro ou depende de rede acontece offline**.
 O backend só carrega artefatos prontos: sobe em ~1,3 s e nunca chama uma API
@@ -91,6 +106,23 @@ escalar puro. A busca é uma varredura linear (~25 ms para 82k faixas), o que
 evita manter uma matriz de similaridade 82k × 82k (~27 GB) em memória.
 
 Detalhes em [data/](piVI/data/README.md) e [backend/](piVI/backend/README.md).
+
+### Gerando a playlist
+
+Do clique à playlist salva, três requests:
+
+| # | Request | Resultado |
+|---|---|---|
+| 1 | `GET /api/search?q=…` | a pessoa busca e escolhe a música semente |
+| 2 | `GET /api/recommend/:trackId?n=10` | 10 faixas parecidas, no máximo 2 por artista |
+| 3 | `POST /nest/playlists` | playlist criada com `[semente, ...as 10]` |
+
+A playlist fica com **11 faixas** — a escolhida abre a lista — e nasce sem
+capa (`imageUrl: null`), porque a imagem é um passo separado.
+
+O NestJS guarda **só os `track_id`**: a fonte da verdade sobre faixas é o
+serviço de recomendação. Os nomes são buscados sob demanda, quando a pessoa
+abre a playlist na interface.
 
 ---
 
@@ -178,8 +210,11 @@ Os três `.json` são artefatos gerados e não vão para o git.
 ```bash
 cd piVI/backend
 npm install
-DATA_DIR=../data npm run dev
+npm run dev
 ```
+
+A pasta `data/` é encontrada sozinha, subindo a árvore a partir do cwd.
+`DATA_DIR` continua valendo se você quiser apontar para outro lugar.
 
 Ou via Docker:
 
@@ -197,6 +232,22 @@ Verificando:
 curl "http://localhost:8000/api/health"
 # {"status":"ok","tracks":82924,"dimensions":140,"playable":0,...}
 ```
+
+### API de playlists e frontend
+
+```bash
+cd piVI/nest-api && npm install && npm run dev     # porta 8001
+cd piVI/frontend && npm install && npm run dev     # porta 5173
+```
+
+Os três serviços sobem juntos: sem o backend a busca falha com
+`ECONNREFUSED`, sem o `nest-api` a aba de playlists não carrega. O proxy do
+Vite resolve as duas APIs, então não há CORS em dev.
+
+Para o upload de capa funcionar, preencha `S3_BUCKET` (ou `AWS_S3_BUCKET`) e a
+credencial da AWS no `.env`. Sem isso as playlists funcionam normalmente e o
+upload responde `503` com a mensagem do que falta — ver
+[nest-api/](piVI/nest-api/README.md).
 
 Rotas completas em [api/](piVI/api/README.md).
 
@@ -235,8 +286,10 @@ As demais variáveis do S3 estão em [nest-api/](piVI/nest-api/README.md).
 
 ## Próximos passos
 
-- [ ] Gerar playlist a partir de uma música escolhida
-- [ ] Player com IFrame Player API, encadeando recomendações num rádio
-      contínuo.
+- [ ] Player com IFrame Player API, tocando a playlist gerada — e daí o rádio
+      contínuo, emendando recomendações sem fim.
+- [ ] Gerar a partir de **várias** sementes: `POST /recommend/profile` já
+      existe na API, falta a interface.
+- [ ] Autenticação: hoje qualquer um edita qualquer playlist.
 - [ ] Popular `youtube_map.json` além das 100 faixas iniciais.
 - [ ] Definir o papel do Postgres, hoje declarado no compose mas não usado.

@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 import cors from "cors";
 import express from "express";
 
@@ -7,6 +9,13 @@ import { Recommender } from "./recommender.js";
 import { createRoutes } from "./routes.js";
 
 async function main() {
+  console.log(`[boot] artefatos em ${config.dataDir}`);
+  if (!fs.existsSync(config.tracksPath)) {
+    throw new Error(
+      `nao achei ${config.tracksPath}. Rode o preprocess ` +
+        "(data/preprocess/vectorize.py) ou aponte DATA_DIR para a pasta data/.",
+    );
+  }
   console.log("[boot] carregando artefatos do preprocess...");
   const started = Date.now();
   const [recommender, youtube] = await Promise.all([

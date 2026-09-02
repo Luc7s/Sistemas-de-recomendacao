@@ -26,7 +26,11 @@ async function parse<T>(res: Response): Promise<T> {
 export const playlistsApi = {
   list: () => fetch(`${NEST_BASE}/playlists`).then(parse<Playlist[]>),
 
-  create: (input: { name: string; description?: string }) =>
+  create: (input: {
+    name: string;
+    description?: string;
+    trackIds?: string[];
+  }) =>
     fetch(`${NEST_BASE}/playlists`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

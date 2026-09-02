@@ -170,3 +170,58 @@ button.danger {
   flex-direction: column;
   gap: 0.35rem;
 }
+
+.generator {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+}
+
+.generator h3,
+section > h3 {
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.results {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.results li {
+  align-items: center;
+  display: flex;
+  font-size: 0.875rem;
+  gap: 0.75rem;
+  justify-content: space-between;
+}
+
+.results li > div {
+  min-width: 0;
+}
+
+.results button {
+  flex-shrink: 0;
+}
+
+.playlist__buttons {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tracks {
+  font-size: 0.8125rem;
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.tracks li {
+  margin-bottom: 0.15rem;
+}

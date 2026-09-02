@@ -1,8 +1,7 @@
 # Frontend
 
 React + Vite + TypeScript. Duas abas: **Rádio** (busca/recomendação/player,
-ainda não implementada) e **Playlists**, onde dá para criar playlists e
-gerenciar a capa de cada uma.
+ainda não implementada) e **Playlists** (implementada).
 
 ---
 
@@ -31,10 +30,31 @@ Suba o `nest-api` antes, senão a aba Playlists mostra erro ao carregar.
 src/
   App.tsx                        abas e roteamento por estado
   lib/api.ts                     cliente da API de playlists (NestJS)
+  lib/recsysApi.ts               cliente da API de recomendação (Express)
   features/playlists/
     PlaylistsTab.tsx             lista, criação, exclusão
+    PlaylistGenerator.tsx        busca uma música e gera a playlist
+    PlaylistTracks.tsx           nomes das faixas, sob demanda
     PlaylistCover.tsx            capa: placeholder, adicionar, excluir
 ```
+
+### Gerar playlist a partir de uma música
+
+Um clique, três requests:
+
+1. `GET /api/search?q=…` — a pessoa busca e escolhe a música semente.
+2. `GET /api/recommend/:trackId?n=10` — dez faixas parecidas (cosseno, com
+   teto de 2 por artista).
+3. `POST /nest/playlists` com `trackIds` = **semente + as 10** — a playlist
+   começa pela música escolhida, então tem 11 faixas.
+
+Nasce sem capa (`imageUrl: null`); a imagem é um passo separado.
+
+**Os nomes das faixas não são guardados na playlist.** O NestJS grava só os
+ids, porque a fonte da verdade sobre faixas é o serviço de recomendação.
+`PlaylistTracks` busca os nomes quando a pessoa clica em "Ver faixas" — ~10
+requests paralelos a um serviço local, e uma faixa que falha aparece como
+"faixa indisponível" sem derrubar a lista.
 
 ### A capa (`PlaylistCover`)
 
@@ -66,6 +86,8 @@ O ponto central: **`imageUrl: null` é estado normal**, não erro.
 
 ## Pendências
 
-- [ ] Gerar a playlist a partir de uma música escolhida
 - [ ] Aba Rádio: player IFrame e o laço de recomendação contínua
+- [ ] Adicionar faixas manualmente a uma playlist (`PATCH /playlists/:id`)
 - [ ] Editar nome e descrição
+- [ ] Reordenar e remover faixas individuais
+- [ ] Gerar a partir de **várias** sementes (`POST /recommend/profile`, já existe na API)

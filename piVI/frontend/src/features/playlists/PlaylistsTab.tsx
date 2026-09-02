@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { playlistsApi, type Playlist } from '../../lib/api';
 import { PlaylistCover } from './PlaylistCover';
+import { PlaylistGenerator } from './PlaylistGenerator';
+import { PlaylistTracks } from './PlaylistTracks';
 
 export function PlaylistsTab() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -9,6 +11,7 @@ export function PlaylistsTab() {
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -53,6 +56,7 @@ export function PlaylistsTab() {
     try {
       await playlistsApi.remove(id);
       setPlaylists((current) => current.filter((p) => p.id !== id));
+      if (openId === id) setOpenId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'falha ao excluir');
     }
@@ -62,6 +66,15 @@ export function PlaylistsTab() {
     <section>
       <h2>Playlists</h2>
 
+      <PlaylistGenerator
+        onGenerated={(playlist) => {
+          setPlaylists((current) => [playlist, ...current]);
+          // Ja abre as faixas: a pessoa quer ver o que foi gerado.
+          setOpenId(playlist.id);
+        }}
+      />
+
+      <h3>Criar vazia</h3>
       <form className="create" onSubmit={handleCreate}>
         <input
           value={name}
@@ -102,13 +115,30 @@ export function PlaylistsTab() {
                   {playlist.trackIds.length === 1 ? '' : 's'}
                   {playlist.imageUrl ? '' : ' · sem capa'}
                 </p>
-                <button
-                  type="button"
-                  className="danger"
-                  onClick={() => void handleDelete(playlist.id)}
-                >
-                  Excluir playlist
-                </button>
+                <div className="playlist__buttons">
+                  {playlist.trackIds.length > 0 && (
+                    <button
+                      type="button"
+                      aria-expanded={openId === playlist.id}
+                      onClick={() =>
+                        setOpenId(openId === playlist.id ? null : playlist.id)
+                      }
+                    >
+                      {openId === playlist.id ? 'Ocultar faixas' : 'Ver faixas'}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => void handleDelete(playlist.id)}
+                  >
+                    Excluir playlist
+                  </button>
+                </div>
+
+                {openId === playlist.id && (
+                  <PlaylistTracks trackIds={playlist.trackIds} />
+                )}
               </div>
             </li>
           ))}
