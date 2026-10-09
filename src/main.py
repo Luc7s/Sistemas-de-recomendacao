@@ -2,6 +2,7 @@ from data_loader import load_dataset
 from data_types import identify_column_types
 from preprocessing import clean_data
 from features import one_hot_encode
+from genre_analysis import analyze_genres
 
 
 def main():
@@ -10,6 +11,7 @@ def main():
     print(identify_column_types(df).to_string(index=False))
 
     df_limpo = clean_data(df)
+    analyze_genres(df_limpo)
     df_codificado = one_hot_encode(df_limpo)
 
     print(df_codificado.head())
