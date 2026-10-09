@@ -25,6 +25,15 @@ python src/data_types.py
 
 A função `identify_column_types(df)` retorna a tabela e pode ser usada com qualquer DataFrame, inclusive `df_codificado`, para conferir os tipos após o one-hot encoding. Ela identifica as colunas numéricas com `select_dtypes(include="number")`; não converte os valores. Textos e booleanos entram em Não numérico. Por exemplo, `explicit` e `track_genre` são não numéricos no dataset original e as colunas `genre_*` são números após a codificação.
 
+## Contagem e gráficos de gêneros
+
+Execute `python src/genre_analysis.py` na pasta principal para contar as músicas por gênero no dataset limpo. A contagem completa dos 113 gêneros aparece no terminal.
+
+- `outputs/musicas_por_genero.png`: os 20 gêneros com mais músicas, em barras horizontais com nomes e quantidades.
+- `outputs/histograma_generos.png`: todos os gêneros agrupados em faixas de 100 músicas, com a quantidade de gêneros escrita sobre cada barra.
+
+As imagens são salvas antes de abrir as janelas dos gráficos e podem ser inseridas em slides. Ao executar `main.py`, feche as janelas para continuar para o one-hot encoding. A pasta `outputs` é ignorada pelo Git e pode ser recriada executando a análise.
+
 ## One-hot encoding
 
 A função `one_hot_encode` de `src/features.py` usa `pd.get_dummies` para codificar os gêneros musicais.
