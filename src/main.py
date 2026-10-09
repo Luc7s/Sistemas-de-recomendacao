@@ -1,10 +1,14 @@
 from data_loader import load_dataset
+from data_types import identify_column_types
 from preprocessing import clean_data
 from features import one_hot_encode
 
 
 def main():
     df = load_dataset()
+    print("Tipos das colunas do dataset original:")
+    print(identify_column_types(df).to_string(index=False))
+
     df_limpo = clean_data(df)
     df_codificado = one_hot_encode(df_limpo)
 
