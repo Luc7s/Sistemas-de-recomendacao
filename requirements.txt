@@ -1,2 +1,5 @@
-pandas
-matplotlib
+# Leitura, limpeza, tipos das colunas e one-hot encoding.
+pandas==2.2.3
+
+# Gráficos de barras e histogramas.
+matplotlib==3.10.8

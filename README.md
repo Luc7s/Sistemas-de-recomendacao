@@ -4,12 +4,32 @@ Pré-processamento do dataset de músicas do Spotify: carregamento, limpeza e on
 
 ## Como executar
 
-Na pasta principal do projeto:
+Com o Python instalado, abra o terminal na pasta principal do projeto. Todas as bibliotecas externas usadas pelo código estão listadas em `requirements.txt`, nas versões usadas para testar o projeto:
+
+- `pandas`: leitura do CSV, limpeza, identificação de tipos e one-hot encoding.
+- `matplotlib`: criação e salvamento dos gráficos.
+
+Instale todas de uma vez:
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+O pip também instala automaticamente as dependências dessas bibliotecas, como NumPy. O módulo `pathlib` já vem com o Python.
+
+Se estiver no Windows e o comando `python` não funcionar, use:
+
+```bash
+py -m pip install -r requirements.txt
+```
+
+Depois execute o projeto:
+
+```bash
 python src/main.py
 ```
+
+No Windows, também pode executar com `py src/main.py`. Este projeto usa Python e seu comando de instalação é o do pip.
 
 O programa lê `data/dataset.csv`, aplica a limpeza de `src/preprocessing.py` e salva o resultado codificado em `data/encoded_dataset.csv`, sem adicionar uma coluna de índice ao CSV. O arquivo gerado é ignorado pelo Git e pode ser recriado executando o programa.
 
