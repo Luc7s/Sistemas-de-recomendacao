@@ -1,29 +1,23 @@
 import pandas as pd
-from pandas.api.types import is_bool_dtype, is_numeric_dtype, is_string_dtype
 
 
 def identify_column_types(df):
     resultado = []
+    colunas_numericas = df.select_dtypes(include="number").columns
 
     for coluna in df.columns:
-        tipo = df[coluna].dtype
-
-        if is_bool_dtype(tipo):
-            classificacao = "Booleano (True/False)"
-        elif is_numeric_dtype(tipo):
+        if coluna in colunas_numericas:
             classificacao = "Número"
-        elif is_string_dtype(tipo):
-            classificacao = "Texto"
         else:
-            classificacao = "Outro"
+            classificacao = "Não numérico"
 
         resultado.append({
             "coluna": coluna,
             "classificacao": classificacao,
-            "tipo_pandas": str(tipo),
+            "tipo_pandas": str(df[coluna].dtype),
         })
 
-    return pd.DataFrame(resultado, columns=["coluna", "classificacao", "tipo_pandas"])
+    return pd.DataFrame(resultado)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ O programa lê `data/dataset.csv`, aplica a limpeza de `src/preprocessing.py` e 
 
 ## Tipos das colunas
 
-O `main.py` também mostra uma tabela com o nome de cada coluna do dataset original, sua classificação (Número, Texto, Booleano ou Outro) e o tipo identificado pelo pandas.
+O `main.py` também mostra uma tabela com o nome de cada coluna do dataset original, sua classificação (Número ou Não numérico) e o tipo identificado pelo pandas.
 
 Para ver apenas essa tabela:
 
@@ -23,7 +23,7 @@ Para ver apenas essa tabela:
 python src/data_types.py
 ```
 
-A função `identify_column_types(df)` retorna a tabela e pode ser usada com qualquer DataFrame, inclusive `df_codificado`, para conferir os tipos após o one-hot encoding. Ela consulta o tipo da coluna (`dtype`); não converte os valores. Por exemplo, `explicit` é booleano, enquanto `track_genre` é texto no dataset original e as colunas `genre_*` são números após a codificação.
+A função `identify_column_types(df)` retorna a tabela e pode ser usada com qualquer DataFrame, inclusive `df_codificado`, para conferir os tipos após o one-hot encoding. Ela identifica as colunas numéricas com `select_dtypes(include="number")`; não converte os valores. Textos e booleanos entram em Não numérico. Por exemplo, `explicit` e `track_genre` são não numéricos no dataset original e as colunas `genre_*` são números após a codificação.
 
 ## One-hot encoding
 
