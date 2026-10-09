@@ -1,13 +1,18 @@
 from data_loader import load_dataset
 from preprocessing import clean_data
+from features import one_hot_encode
 
 
 def main():
     df = load_dataset()
     df_limpo = clean_data(df)
+    df_codificado = one_hot_encode(df_limpo)
 
-    print(df_limpo.head())
-    # Use df_limpo nas próximas etapas do sistema.
+    print(df_codificado.head())
+    print(f"Dataset codificado: {df_codificado.shape[0]} músicas e {df_codificado.shape[1]} colunas")
+
+    df_codificado.to_csv("data/encoded_dataset.csv", index=False)
+    print("Dataset salvo em data/encoded_dataset.csv")
 
 
 if __name__ == "__main__":
