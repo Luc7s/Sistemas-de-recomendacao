@@ -11,8 +11,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 RESULT_COLS = [
+    "track_id",
     "track_name",
     "artists",
+    "album_name",
     "track_genre",
     "popularity",
     "similarity"
