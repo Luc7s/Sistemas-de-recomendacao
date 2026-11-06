@@ -1,4 +1,15 @@
 __pycache__/
 *.pyc
-data/encoded_dataset.csv
+
+# Dataset
+data/*.csv
+
+# Generated models
+models/
+
+# Outputs
 outputs/
+
+# Environments
+.venv/
+venv/
