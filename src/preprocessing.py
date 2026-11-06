@@ -18,8 +18,7 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
     before = df_clean.shape[0]
 
     df_clean = df_clean.dropna()
-    df_clean = df_clean.drop_duplicates(subset="track_id", keep="first")
-    df_clean = df.drop_duplicates(
+    df_clean = df_clean.drop_duplicates(
     subset=["track_name", "artists"],
     keep="first"
 )

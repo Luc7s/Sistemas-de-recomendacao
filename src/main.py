@@ -1,9 +1,7 @@
-
 from data_loader import load_dataset
 from data_types import identify_column_types
 from preprocessing import clean_data
 from features import build_features
-from genre_analysis import analyze_genres
 from recommender import recommend_songs, recommend_songs_mmr
 
 
@@ -15,8 +13,6 @@ def main():
 
     df_limpo = clean_data(df)
 
-#analyze_genres(df_limpo)
-
     X, feature_matrix, scaler = build_features(df_limpo)
 
     print(f"\nTotal de músicas: {X.shape[0]}")
@@ -27,6 +23,7 @@ def main():
 
     if artist.strip() == "":
         artist = None
+
     print("\nRECOMENDAÇÕES BASELINE")
 
     recommendations = recommend_songs(
@@ -39,7 +36,6 @@ def main():
 
     if recommendations is None:
         print("Música não encontrada no dataset.")
-
     else:
         print(recommendations.to_string(index=False))
         recommendations.to_csv(
@@ -57,7 +53,9 @@ def main():
         n=10
     )
 
-    if recommendations_mmr is not None:
+    if recommendations_mmr is None:
+        print("Música não encontrada no dataset.")
+    else:
         print(recommendations_mmr.to_string(index=False))
         recommendations_mmr.to_csv(
             "data/recommendations_mmr.csv",
@@ -69,7 +67,7 @@ def main():
         index=False
     )
 
-    print("Arquivos de recomendação salvos na pasta data")
+    print("\nArquivos salvos na pasta data.")
 
 
 if __name__ == "__main__":
