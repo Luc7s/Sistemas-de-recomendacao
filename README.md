@@ -1,63 +1,160 @@
-# Sistemas de recomendação
+# Sistema de Recomendação de Músicas
 
-Pré-processamento do dataset de músicas do Spotify: carregamento, limpeza e one-hot encoding dos gêneros.
+Projeto de um sistema de recomendação musical utilizando um dataset do Spotify. O objetivo é recomendar músicas semelhantes a partir de uma música informada pelo usuário, considerando características musicais e gêneros.
 
-## Como executar
+## Tecnologias utilizadas
 
-Com o Python instalado, abra o terminal na pasta principal do projeto. Todas as bibliotecas externas usadas pelo código estão listadas em `requirements.txt`, nas versões usadas para testar o projeto:
+- Python
+- Pandas
+- NumPy
+- Matplotlib
+- Scikit-learn
 
-- `pandas`: leitura do CSV, limpeza, identificação de tipos e one-hot encoding.
-- `matplotlib`: criação e salvamento dos gráficos.
+## Funcionalidades implementadas
 
-Instale todas de uma vez:
+### 1. Carregamento dos dados
+- Leitura do dataset em formato CSV.
+- Carregamento centralizado pelo módulo `data_loader.py`.
+
+### 2. Tratamento dos dados
+- Remoção de valores nulos.
+- Remoção de músicas com `track_id` duplicado.
+- Remoção de registros duplicados.
+- Filtragem de durações inválidas ou superiores a 20 minutos.
+- Remoção de músicas com BPM inválido.
+- Reinicialização dos índices.
+
+### 3. Análise dos gêneros
+- Contagem de músicas por gênero.
+- Identificação da quantidade de gêneros.
+- Geração de gráficos para analisar a distribuição dos dados.
+
+### 4. Engenharia de características (Feature Engineering)
+Preparação das características musicais para o algoritmo de recomendação:
+
+- Aplicação de `log1p` em variáveis assimétricas.
+- Padronização de características numéricas com `StandardScaler`.
+- Codificação dos gêneros com One-hot Encoding.
+- Transformação da tonalidade musical (`key`) utilizando seno e cosseno.
+- Aplicação de peso nas características de gênero.
+
+### 5. Sistema de recomendação
+
+Foram implementados dois métodos:
+
+**Baseline — Similaridade do Cosseno**
+
+Compara a música escolhida com as demais músicas do dataset e retorna as mais semelhantes.
+
+**MMR — Maximal Marginal Relevance**
+
+Busca equilibrar relevância e diversidade, evitando recomendações excessivamente repetitivas.
+
+## Estrutura do projeto
+
+```text
+Sistemas-de-recomendacao/
+│
+├── data/
+│   ├── dataset.csv
+│   ├── feature_matrix.csv
+│   ├── features.npy
+│   ├── recommendations_baseline.csv
+│   └── recommendations_mmr.csv
+│
+├── outputs/
+│   ├── musicas_por_genero.png
+│   └── histograma_generos.png
+│
+├── src/
+│   ├── main.py
+│   ├── data_loader.py
+│   ├── data_types.py
+│   ├── preprocessing.py
+│   ├── features.py
+│   ├── genre_analysis.py
+│   └── recommender.py
+│
+├── requirements.txt
+└── README.md
+```
+
+Os arquivos gerados durante a execução são recriados pelo programa e não precisam estar previamente disponíveis.
+
+## Como executar o projeto
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/Luc7s/Sistemas-de-recomendacao.git
+```
+
+### 2. Entrar na pasta
+
+```bash
+cd Sistemas-de-recomendacao
+```
+
+### 3. Instalar as dependências
 
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-O pip também instala automaticamente as dependências dessas bibliotecas, como NumPy. O módulo `pathlib` já vem com o Python.
-
-Se estiver no Windows e o comando `python` não funcionar, use:
+No Windows, caso necessário:
 
 ```bash
 py -m pip install -r requirements.txt
 ```
 
-Depois execute o projeto:
+### 4. Adicionar o dataset
+
+Coloque o arquivo `dataset.csv` dentro da pasta `data/`.
+
+O caminho esperado é:
+
+```text
+data/dataset.csv
+```
+
+### 5. Executar o projeto
+
+Na pasta principal, execute:
 
 ```bash
 python src/main.py
 ```
 
-No Windows, também pode executar com `py src/main.py`. Este projeto usa Python e seu comando de instalação é o do pip.
-
-O programa lê `data/dataset.csv`, aplica a limpeza de `src/preprocessing.py` e salva o resultado codificado em `data/encoded_dataset.csv`, sem adicionar uma coluna de índice ao CSV. O arquivo gerado é ignorado pelo Git e pode ser recriado executando o programa.
-
-## Tipos das colunas
-
-O `main.py` também mostra uma tabela com o nome de cada coluna do dataset original, sua classificação (Número ou Não numérico) e o tipo identificado pelo pandas.
-
-Para ver apenas essa tabela:
+Ou, no Windows:
 
 ```bash
-python src/data_types.py
+py src/main.py
 ```
 
-A função `identify_column_types(df)` retorna a tabela e pode ser usada com qualquer DataFrame, inclusive `df_codificado`, para conferir os tipos após o one-hot encoding. Ela identifica as colunas numéricas com `select_dtypes(include="number")`; não converte os valores. Textos e booleanos entram em Não numérico. Por exemplo, `explicit` e `track_genre` são não numéricos no dataset original e as colunas `genre_*` são números após a codificação.
+### 6. Pesquisar uma música
 
-## Contagem e gráficos de gêneros
+O programa solicitará:
 
-Execute `python src/genre_analysis.py` na pasta principal para contar as músicas por gênero no dataset limpo. A contagem completa dos 113 gêneros aparece no terminal.
+```text
+Digite o nome da música:
+Digite o artista (opcional):
+```
 
-- `outputs/musicas_por_genero.png`: os 20 gêneros com mais músicas, em barras horizontais com nomes e quantidades.
-- `outputs/histograma_generos.png`: todos os gêneros agrupados em faixas de 100 músicas, com a quantidade de gêneros escrita sobre cada barra.
+Depois, serão exibidas as recomendações geradas pelos dois métodos:
 
-As imagens são salvas antes de abrir as janelas dos gráficos e podem ser inseridas em slides. Ao executar `main.py`, feche as janelas para continuar para o one-hot encoding. A pasta `outputs` é ignorada pelo Git e pode ser recriada executando a análise.
+- Baseline
+- MMR
 
-## One-hot encoding
+Os resultados também são salvos em arquivos CSV na pasta `data/`.
 
-A função `one_hot_encode` de `src/features.py` usa `pd.get_dummies` para codificar os gêneros musicais.
+## Próximas etapas
 
-A coluna `track_genre` é substituída por uma coluna para cada gênero presente no dataset limpo. Por exemplo, uma música de rock recebe `genre_rock = 1` e `0` nas colunas dos outros gêneros. Todas as categorias são mantidas, sem `drop_first`.
+- Validar e comparar os resultados dos algoritmos.
+- Avaliar a diversidade e a qualidade das recomendações.
+- Desenvolver uma API utilizando FastAPI.
+- Criar uma interface utilizando React.
+- Integrar o sistema à API do Spotify, se necessário.
 
-As outras colunas, a ordem das músicas e o índice são preservados. O dataset limpo original continua disponível em `df_limpo`. Esta etapa apenas codifica os gêneros; a seleção e a normalização das demais características para calcular similaridade ficam para as próximas etapas.
+## Objetivo
+
+Desenvolver um sistema de recomendação musical baseado em conteúdo (*Content-Based Filtering*), utilizando características das músicas para identificar similaridades e gerar recomendações.

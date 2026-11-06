@@ -19,12 +19,14 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 
     df_clean = df_clean.dropna()
     df_clean = df_clean.drop_duplicates(subset="track_id", keep="first")
-    df_clean = df_clean.drop_duplicates()
+    df_clean = df.drop_duplicates(
+    subset=["track_name", "artists"],
+    keep="first"
+)
 
-    # Guard against bad sensor/metadata rows
     df_clean = df_clean[
         (df_clean["duration_ms"] > 0) & (df_clean["duration_ms"] < 20 * 60 * 1000)
-    ]  # < 20 min
+    ]  
     df_clean = df_clean[df_clean["tempo"] > 0]
 
     df_clean = df_clean.reset_index(drop=True)

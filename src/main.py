@@ -1,24 +1,75 @@
+
 from data_loader import load_dataset
 from data_types import identify_column_types
 from preprocessing import clean_data
-from features import one_hot_encode
+from features import build_features
 from genre_analysis import analyze_genres
+from recommender import recommend_songs, recommend_songs_mmr
 
 
 def main():
     df = load_dataset()
+
     print("Tipos das colunas do dataset original:")
     print(identify_column_types(df).to_string(index=False))
 
     df_limpo = clean_data(df)
-    analyze_genres(df_limpo)
-    df_codificado = one_hot_encode(df_limpo)
 
-    print(df_codificado.head())
-    print(f"Dataset codificado: {df_codificado.shape[0]} músicas e {df_codificado.shape[1]} colunas")
+#analyze_genres(df_limpo)
 
-    df_codificado.to_csv("data/encoded_dataset.csv", index=False)
-    print("Dataset salvo em data/encoded_dataset.csv")
+    X, feature_matrix, scaler = build_features(df_limpo)
+
+    print(f"\nTotal de músicas: {X.shape[0]}")
+    print(f"Total de features: {X.shape[1]}")
+
+    track_name = input("\nDigite o nome da música: ")
+    artist = input("Digite o artista (opcional): ")
+
+    if artist.strip() == "":
+        artist = None
+    print("\nRECOMENDAÇÕES BASELINE")
+
+    recommendations = recommend_songs(
+        track_name,
+        df_limpo,
+        X,
+        artist_hint=artist,
+        n=10
+    )
+
+    if recommendations is None:
+        print("Música não encontrada no dataset.")
+
+    else:
+        print(recommendations.to_string(index=False))
+        recommendations.to_csv(
+            "data/recommendations_baseline.csv",
+            index=False
+        )
+
+    print("\nRECOMENDAÇÕES MMR")
+
+    recommendations_mmr = recommend_songs_mmr(
+        track_name,
+        df_limpo,
+        X,
+        artist_hint=artist,
+        n=10
+    )
+
+    if recommendations_mmr is not None:
+        print(recommendations_mmr.to_string(index=False))
+        recommendations_mmr.to_csv(
+            "data/recommendations_mmr.csv",
+            index=False
+        )
+
+    feature_matrix.to_csv(
+        "data/feature_matrix.csv",
+        index=False
+    )
+
+    print("Arquivos de recomendação salvos na pasta data")
 
 
 if __name__ == "__main__":
