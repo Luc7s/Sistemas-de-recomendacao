@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from src.persistence import load_artifacts
+from src.recommender import normalize_text
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,6 +16,10 @@ class AppState:
         self.feature_columns = None
         self.df_clean = None
         self.metadata = None
+
+        self.search_names = None
+        self.search_artists = None
+
         self.loaded = False
 
     def load(self):
@@ -29,10 +34,31 @@ class AppState:
         self.df_clean = artifacts["df_clean"]
         self.metadata = artifacts["metadata"]
 
+        # Normaliza os textos apenas uma vez.
+        self.search_names = (
+            self.df_clean["track_name"]
+            .fillna("")
+            .apply(normalize_text)
+        )
+
+        self.search_artists = (
+            self.df_clean["artists"]
+            .fillna("")
+            .apply(normalize_text)
+        )
+
         self.loaded = True
 
         print(
             f"Modelo carregado: {len(self.df_clean)} músicas"
+        )
+
+        print(
+            f"Gêneros: {self.df_clean['track_genre'].nunique()}"
+        )
+
+        print(
+            f"Características: {self.X.shape[1]}"
         )
 
 
